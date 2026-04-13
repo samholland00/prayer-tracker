@@ -586,11 +586,118 @@
       font-size: 16px;
       cursor: pointer;
     }
+    /* === SIGN-IN SCREEN === */
+    .signin-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .signin-screen.hidden { display: none; }
+
+    .signin-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .signin-subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .signin-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      color: var(--text);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .signin-btn:active { opacity: 0.7; }
+
+    .signin-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* === USER BAR === */
+    .user-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 8px 0 0;
+    }
+
+    .user-bar.hidden { display: none; }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    .user-name {
+      font-size: 12px;
+      color: var(--text-muted);
+      flex: 1;
+      text-align: right;
+    }
+
+    .signout-btn {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .sync-indicator {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 2px 0;
+    }
+
   </style>
 </head>
 <body>
 
+  <!-- Sign-in screen -->
+  <div class="signin-screen" id="signinScreen">
+    <div class="signin-title">Prayer Tracker</div>
+    <div class="signin-subtitle">A 365-day Bible reading guide.<br>Sign in to sync your progress across devices.</div>
+    <button class="signin-btn" id="signinBtn">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Sign in with Google
+    </button>
+  </div>
+
   <div class="header">
+    <div class="user-bar hidden" id="userBar">
+      <img class="user-avatar" id="userAvatar" src="" alt="">
+      <span class="user-name" id="userName"></span>
+      <button class="signout-btn" id="signoutBtn">Sign out</button>
+    </div>
     <div class="nav-row">
       <button class="nav-btn" id="prevBtn">‹</button>
       <div class="day-title" id="dayTitle"></div>
@@ -645,8 +752,26 @@
     </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script src="data.js"></script>
   <script>
+    // ===== FIREBASE =====
+    firebase.initializeApp({
+      apiKey: "AIzaSyDba4Crin-xBZpIgBzu2XdizYsD-kc6m_4",
+      authDomain: "prayer-tracker-d0cee.firebaseapp.com",
+      projectId: "prayer-tracker-d0cee",
+      storageBucket: "prayer-tracker-d0cee.firebasestorage.app",
+      messagingSenderId: "417825934056",
+      appId: "1:417825934056:web:05c7db71afa8248945175d",
+    });
+
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    let currentUser = null;
+    let firestoreReady = false;
+
     // ===== CONFIG =====
     const BIBLE_TRANSLATION = 'ESV';
     const STORAGE_KEYS = {
@@ -691,12 +816,63 @@
     // ===== PERSISTENCE =====
     function saveProgress() {
       localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify(progress));
+      syncToFirestore({ progress });
     }
     function saveNotes() {
       localStorage.setItem(STORAGE_KEYS.notes, JSON.stringify(notes));
+      syncToFirestore({ notes });
     }
     function saveCurrentDay() {
       localStorage.setItem(STORAGE_KEYS.currentDay, currentDay);
+      syncToFirestore({ currentDay });
+    }
+
+    // Debounced Firestore sync
+    let syncTimer;
+    let pendingSync = {};
+
+    function syncToFirestore(data) {
+      if (!currentUser) return;
+      Object.assign(pendingSync, data);
+      clearTimeout(syncTimer);
+      syncTimer = setTimeout(async () => {
+        const toSync = { ...pendingSync };
+        pendingSync = {};
+        try {
+          await db.collection('users').doc(currentUser.uid).set(toSync, { merge: true });
+        } catch (e) {
+          console.error('Firestore sync error:', e);
+        }
+      }, 1000);
+    }
+
+    async function loadFromFirestore() {
+      if (!currentUser) return false;
+      try {
+        const doc = await db.collection('users').doc(currentUser.uid).get();
+        if (doc.exists) {
+          const data = doc.data();
+          if (data.progress) { progress = data.progress; localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify(progress)); }
+          if (data.notes) { notes = data.notes; localStorage.setItem(STORAGE_KEYS.notes, JSON.stringify(notes)); }
+          if (data.currentDay) { currentDay = data.currentDay; localStorage.setItem(STORAGE_KEYS.currentDay, currentDay); }
+          return true;
+        }
+        return false;
+      } catch (e) {
+        console.error('Firestore load error:', e);
+        return false;
+      }
+    }
+
+    async function migrateLocalToFirestore() {
+      if (!currentUser) return;
+      // If user has local data but no Firestore data, push local to cloud
+      const doc = await db.collection('users').doc(currentUser.uid).get();
+      if (!doc.exists && (Object.keys(progress).length > 0 || Object.keys(notes).length > 0)) {
+        await db.collection('users').doc(currentUser.uid).set({
+          progress, notes, currentDay
+        });
+      }
     }
 
     // ===== BIBLE TEXT FETCHING =====
@@ -1181,8 +1357,53 @@
 
     document.getElementById('scriptureModalClose').addEventListener('click', closeScriptureModal);
 
-    // ===== INIT =====
-    renderDay();
+    // ===== AUTH =====
+    function showApp() {
+      document.getElementById('signinScreen').classList.add('hidden');
+      renderDay();
+    }
+
+    function showSignIn() {
+      document.getElementById('signinScreen').classList.remove('hidden');
+      document.getElementById('userBar').classList.add('hidden');
+    }
+
+    function updateUserBar(user) {
+      const bar = document.getElementById('userBar');
+      if (user) {
+        bar.classList.remove('hidden');
+        document.getElementById('userAvatar').src = user.photoURL || '';
+        document.getElementById('userName').textContent = user.displayName || user.email;
+      } else {
+        bar.classList.add('hidden');
+      }
+    }
+
+    document.getElementById('signinBtn').addEventListener('click', async () => {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        await auth.signInWithPopup(provider);
+      } catch (e) {
+        console.error('Sign-in error:', e);
+      }
+    });
+
+    document.getElementById('signoutBtn').addEventListener('click', async () => {
+      await auth.signOut();
+    });
+
+    // Auth state listener
+    auth.onAuthStateChanged(async (user) => {
+      currentUser = user;
+      if (user) {
+        updateUserBar(user);
+        const loaded = await loadFromFirestore();
+        if (!loaded) await migrateLocalToFirestore();
+        showApp();
+      } else {
+        showSignIn();
+      }
+    });
   </script>
 </body>
 </html>
