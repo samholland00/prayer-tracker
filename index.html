@@ -1390,7 +1390,18 @@
       await auth.signOut();
     });
 
-    // Auth state listener
+    // Auth: handle redirect result first, then listen for state
+    let authResolved = false;
+
+    auth.getRedirectResult().then(async (result) => {
+      // If we got a user from redirect, onAuthStateChanged will handle it
+      // If not, we'll let onAuthStateChanged show the sign-in screen
+      authResolved = true;
+    }).catch((e) => {
+      console.error('Redirect error:', e);
+      authResolved = true;
+    });
+
     auth.onAuthStateChanged(async (user) => {
       currentUser = user;
       if (user) {
@@ -1399,7 +1410,19 @@
         if (!loaded) await migrateLocalToFirestore();
         showApp();
       } else {
-        showSignIn();
+        // Only show sign-in after redirect result has been checked
+        // to avoid flashing the sign-in screen during redirect flow
+        if (authResolved) {
+          showSignIn();
+        } else {
+          // Wait for redirect result to resolve
+          const checkInterval = setInterval(() => {
+            if (authResolved) {
+              clearInterval(checkInterval);
+              if (!currentUser) showSignIn();
+            }
+          }, 100);
+        }
       }
     });
   </script>
