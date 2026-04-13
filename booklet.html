@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The Bible in a Year — Printable Booklet</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    @page { size: A5; margin: 14mm; }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      color: #111;
+      line-height: 1.4;
+    }
+
+    .page {
+      page-break-after: always;
+      break-after: page;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .day-page { min-height: 182mm; }
+
+    .day-header {
+      border-bottom: 1px solid #333;
+      padding-bottom: 3mm;
+      margin-bottom: 5mm;
+    }
+    .day-number {
+      font-size: 22pt;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+    .day-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-top: 2mm;
+      font-size: 10pt;
+      color: #444;
+    }
+    .day-period { font-style: italic; }
+    .day-date { letter-spacing: 0.3px; }
+    .day-date-line {
+      display: inline-block;
+      width: 45mm;
+      border-bottom: 1px solid #888;
+    }
+
+    .reading-section {
+      margin-bottom: 4mm;
+    }
+    .reading-row {
+      display: flex;
+      align-items: center;
+      gap: 3mm;
+      font-size: 11pt;
+      margin-bottom: 1.5mm;
+    }
+    .checkbox {
+      width: 4mm;
+      height: 4mm;
+      border: 1px solid #333;
+      flex-shrink: 0;
+    }
+    .reading-label {
+      font-weight: bold;
+      min-width: 32mm;
+    }
+    .reading-ref { flex: 1; }
+
+    .notes-lines {
+      display: flex;
+      flex-direction: column;
+    }
+    .note-line {
+      height: 7.5mm;
+      border-bottom: 1px solid #bbb;
+    }
+
+    .period-divider {
+      page-break-after: always;
+      break-after: page;
+      min-height: 182mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20mm 10mm;
+    }
+    .period-eyebrow {
+      font-size: 10pt;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 8mm;
+    }
+    .period-title {
+      font-size: 30pt;
+      font-weight: bold;
+      margin-bottom: 8mm;
+      line-height: 1.2;
+    }
+    .period-range {
+      font-size: 12pt;
+      color: #444;
+      font-style: italic;
+    }
+
+    .title-page {
+      min-height: 182mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20mm 10mm;
+    }
+    .title-main {
+      font-size: 34pt;
+      font-weight: bold;
+      margin-bottom: 6mm;
+      line-height: 1.1;
+    }
+    .title-sub {
+      font-size: 13pt;
+      color: #444;
+      margin-bottom: 20mm;
+      font-style: italic;
+    }
+    .title-owner {
+      font-size: 11pt;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #666;
+    }
+    .title-owner-line {
+      display: inline-block;
+      width: 80mm;
+      border-bottom: 1px solid #888;
+      margin-top: 8mm;
+    }
+
+    /* Screen-only preview */
+    @media screen {
+      body {
+        background: #e5e5e5;
+        padding: 20px;
+      }
+      .page, .period-divider {
+        width: 148mm;
+        min-height: 210mm;
+        background: white;
+        margin: 0 auto 20px;
+        padding: 14mm;
+        box-shadow: 0 2px 10px rgba(0,0,0,.18);
+      }
+      #instructions {
+        max-width: 148mm;
+        margin: 0 auto 30px;
+        padding: 16px 20px;
+        background: #fff;
+        border-left: 4px solid #1a3a6e;
+        font-family: -apple-system, system-ui, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+        box-shadow: 0 2px 10px rgba(0,0,0,.1);
+      }
+      #instructions h2 {
+        font-size: 16px;
+        margin-bottom: 8px;
+        color: #1a3a6e;
+      }
+      #instructions ul { margin-left: 20px; }
+      #instructions li { margin: 3px 0; }
+      #instructions strong { color: #1a3a6e; }
+    }
+
+    @media print {
+      #instructions { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div id="instructions">
+    <h2>Printing this booklet</h2>
+    <ul>
+      <li>Open in <strong>Chrome</strong> or <strong>Safari</strong>, then press <strong>Cmd+P</strong>.</li>
+      <li>Paper size: <strong>A5</strong></li>
+      <li>Margins: <strong>Default</strong> (the layout handles spacing)</li>
+      <li><strong>Background graphics: ON</strong> — required for the ruled note lines to appear.</li>
+      <li>Destination: <strong>Save as PDF</strong>, or print double-sided to make a physical booklet.</li>
+    </ul>
+  </div>
+
+  <div id="booklet"></div>
+
+  <script src="data.js"></script>
+  <script>
+    const root = document.getElementById('booklet');
+    const frag = document.createDocumentFragment();
+
+    // Title page
+    const title = document.createElement('div');
+    title.className = 'page title-page';
+    title.innerHTML = `
+      <div class="title-main">The Bible<br>in a Year</div>
+      <div class="title-sub">A 365-day reading plan</div>
+      <div class="title-owner">This booklet belongs to<div class="title-owner-line"></div></div>
+    `;
+    frag.appendChild(title);
+
+    // Walk the plan as contiguous blocks by period name. "Messianic Checkpoint"
+    // recurs in three separate ranges and each gets its own divider with its own range.
+    const blocks = [];
+    for (const entry of READING_PLAN) {
+      const last = blocks[blocks.length - 1];
+      if (last && last.period === entry.period) {
+        last.end = entry.day;
+      } else {
+        blocks.push({ period: entry.period, start: entry.day, end: entry.day });
+      }
+    }
+    const blockByStartDay = Object.fromEntries(blocks.map((b, i) => [b.start, { ...b, index: i }]));
+
+    for (const entry of READING_PLAN) {
+      const block = blockByStartDay[entry.day];
+      if (block) {
+        const divider = document.createElement('div');
+        divider.className = 'period-divider';
+        divider.innerHTML = `
+          <div class="period-eyebrow">Part ${block.index + 1}</div>
+          <div class="period-title">${block.period}</div>
+          <div class="period-range">Days ${block.start}&ndash;${block.end}</div>
+        `;
+        frag.appendChild(divider);
+      }
+
+      const page = document.createElement('div');
+      page.className = 'page day-page';
+
+      const sections = [
+        { label: 'First Reading', ref: entry.firstReading },
+        ...(entry.secondReading ? [{ label: 'Second Reading', ref: entry.secondReading }] : []),
+        { label: 'Psalms/Proverbs', ref: entry.psalms },
+      ];
+      const linesPerSection = sections.length === 3 ? 5 : 8;
+
+      const sectionsHtml = sections.map(s => `
+        <div class="reading-section">
+          <div class="reading-row">
+            <span class="checkbox"></span>
+            <span class="reading-label">${s.label}</span>
+            <span class="reading-ref">${s.ref}</span>
+          </div>
+          <div class="notes-lines">${'<div class="note-line"></div>'.repeat(linesPerSection)}</div>
+        </div>
+      `).join('');
+
+      page.innerHTML = `
+        <div class="day-header">
+          <div class="day-number">Day ${entry.day}</div>
+          <div class="day-meta">
+            <span class="day-period">${entry.period}</span>
+            <span class="day-date">Date: <span class="day-date-line"></span></span>
+          </div>
+        </div>
+        ${sectionsHtml}
+      `;
+      frag.appendChild(page);
+    }
+
+    root.appendChild(frag);
+  </script>
+</body>
+</html>
