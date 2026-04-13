@@ -1381,25 +1381,18 @@
       }
     }
 
-    document.getElementById('signinBtn').addEventListener('click', () => {
+    document.getElementById('signinBtn').addEventListener('click', async () => {
       const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithRedirect(provider);
+      try {
+        await auth.signInWithPopup(provider);
+      } catch (e) {
+        console.error('Sign-in error:', e);
+        alert('Sign-in failed: ' + (e.message || e.code));
+      }
     });
 
     document.getElementById('signoutBtn').addEventListener('click', async () => {
       await auth.signOut();
-    });
-
-    // Auth: handle redirect result first, then listen for state
-    let authResolved = false;
-
-    auth.getRedirectResult().then(async (result) => {
-      // If we got a user from redirect, onAuthStateChanged will handle it
-      // If not, we'll let onAuthStateChanged show the sign-in screen
-      authResolved = true;
-    }).catch((e) => {
-      console.error('Redirect error:', e);
-      authResolved = true;
     });
 
     auth.onAuthStateChanged(async (user) => {
@@ -1410,19 +1403,7 @@
         if (!loaded) await migrateLocalToFirestore();
         showApp();
       } else {
-        // Only show sign-in after redirect result has been checked
-        // to avoid flashing the sign-in screen during redirect flow
-        if (authResolved) {
-          showSignIn();
-        } else {
-          // Wait for redirect result to resolve
-          const checkInterval = setInterval(() => {
-            if (authResolved) {
-              clearInterval(checkInterval);
-              if (!currentUser) showSignIn();
-            }
-          }, 100);
-        }
+        showSignIn();
       }
     });
   </script>
