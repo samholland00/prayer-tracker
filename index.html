@@ -95,6 +95,64 @@
       font-weight: 500;
       letter-spacing: 0.5px;
       text-transform: uppercase;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .period-label:active { opacity: 0.6; }
+
+    /* === DAY STATUS === */
+    .day-status {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .day-complete-banner {
+      text-align: center;
+      color: var(--accent);
+      padding: 16px 0 4px;
+      font-size: 15px;
+      font-weight: 600;
+      animation: bannerIn 0.3s ease;
+    }
+
+    @keyframes bannerIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* === PERIOD PICKER === */
+    .period-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .period-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      background: var(--scripture-bg);
+      color: var(--text);
+      font-size: 15px;
+      text-align: left;
+      width: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .period-item:active { opacity: 0.6; }
+    .period-item.current { background: var(--accent); color: white; font-weight: 600; }
+
+    .period-item-days {
+      font-size: 12px;
+      opacity: 0.7;
     }
 
     /* === PROGRESS BAR === */
@@ -315,6 +373,155 @@
       border-color: var(--accent);
     }
 
+    /* === HISTORY BUTTON === */
+    .history-btn {
+      display: block;
+      margin: 20px auto 0;
+      padding: 10px 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .history-btn:active { opacity: 0.6; }
+
+    /* === HISTORY LOG === */
+    .history-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: var(--bg);
+      flex-direction: column;
+    }
+
+    .history-modal.open { display: flex; }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .history-header h3 { font-size: 18px; }
+
+    .history-close {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .history-filters {
+      display: flex;
+      gap: 6px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      overflow-x: auto;
+    }
+
+    .filter-btn {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 8px 20px;
+    }
+
+    .history-period-heading {
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 0 4px;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .history-item:active { opacity: 0.6; }
+
+    .history-status {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .history-status.complete { background: var(--accent); }
+    .history-status.partial { background: #d4a93c; }
+    .history-status.not-started { background: var(--border); }
+
+    .history-info { flex: 1; min-width: 0; }
+
+    .history-day-label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .history-readings {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .history-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .history-badge.complete { background: var(--accent-light); color: var(--accent); }
+    .history-badge.partial { background: #fdf3dc; color: #9a7b2e; }
+    .history-badge.not-started { background: var(--scripture-bg); color: var(--text-muted); }
+
+    @media (prefers-color-scheme: dark) {
+      .history-badge.partial { background: #3d3520; color: #d4a93c; }
+    }
+
     /* === DAY PICKER MODAL === */
     .modal-overlay {
       display: none;
@@ -390,6 +597,7 @@
       <button class="nav-btn" id="nextBtn">›</button>
     </div>
     <div class="period-label" id="periodLabel"></div>
+    <div class="day-status" id="dayStatus"></div>
     <div class="progress-wrap">
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       <div class="progress-text" id="progressText"></div>
@@ -397,6 +605,18 @@
   </div>
 
   <div class="sections" id="sections"></div>
+
+  <button class="history-btn" id="historyBtn">View History</button>
+
+  <!-- History log -->
+  <div class="history-modal" id="historyModal">
+    <div class="history-header">
+      <h3>Reading History</h3>
+      <button class="history-close" id="historyClose">&times;</button>
+    </div>
+    <div class="history-filters" id="historyFilters"></div>
+    <div class="history-list" id="historyList"></div>
+  </div>
 
   <!-- Full-screen scripture reader -->
   <div class="scripture-modal" id="scriptureModal">
@@ -414,6 +634,14 @@
       <h3>Jump to Day</h3>
       <div class="day-grid" id="dayGrid"></div>
       <button class="modal-close" id="modalClose">Cancel</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="periodPickerModal">
+    <div class="modal">
+      <h3>Jump to Period</h3>
+      <div class="period-list" id="periodList"></div>
+      <button class="modal-close" id="periodModalClose">Cancel</button>
     </div>
   </div>
 
@@ -571,7 +799,16 @@
       document.getElementById('dayTitle').innerHTML = `Day ${currentDay} <span>· ${dateStr}</span>`;
       document.getElementById('dayTitle').style.cursor = 'pointer';
       document.getElementById('dayTitle').onclick = openDayPicker;
-      document.getElementById('periodLabel').textContent = data ? data.period : '';
+      const periodEl = document.getElementById('periodLabel');
+      if (data) {
+        const p = PERIODS.find(p => currentDay >= p.start && currentDay <= p.end);
+        const dayInPeriod = currentDay - p.start + 1;
+        const periodTotal = p.end - p.start + 1;
+        periodEl.textContent = `${data.period} · Day ${dayInPeriod} of ${periodTotal}`;
+      } else {
+        periodEl.textContent = '';
+      }
+      periodEl.onclick = openPeriodPicker;
 
       // Nav buttons
       document.getElementById('prevBtn').disabled = currentDay <= 1;
@@ -595,7 +832,7 @@
         { key: 'psalms', label: 'Psalms / Proverbs / Song', value: data.psalms, hasScripture: true, hasNotes: true, hasCheckbox: true },
       ];
 
-      const html = sections
+      let html = sections
         .filter(s => s.value) // skip null sections
         .map(s => {
           const checked = dayProgress[s.key] ? 'checked' : '';
@@ -636,6 +873,22 @@
               ${notesHtml}
             </div>`;
         }).join('');
+
+      // Day status + completion banner
+      const sectionKeys = [];
+      if (data.firstReading) sectionKeys.push('first');
+      if (data.secondReading) sectionKeys.push('second');
+      if (data.psalms) sectionKeys.push('psalms');
+      const checkedCount = sectionKeys.filter(k => dayProgress[k]).length;
+      const totalCount = sectionKeys.length;
+      const dayComplete = totalCount > 0 && checkedCount === totalCount;
+
+      if (dayComplete) {
+        document.getElementById('dayStatus').textContent = '';
+        html += '<div class="day-complete-banner">✓ Day Complete</div>';
+      } else {
+        document.getElementById('dayStatus').textContent = `${checkedCount} of ${totalCount} readings complete`;
+      }
 
       document.getElementById('sections').innerHTML = html;
 
@@ -757,6 +1010,154 @@
         else if (diff < 0 && currentDay > 1) { currentDay--; saveCurrentDay(); renderDay(); }
       }
     }, { passive: true });
+
+    // ===== HISTORY LOG =====
+    function getDayStatus(day) {
+      const dp = progress[day];
+      const dayData = getDayData(day);
+      if (!dp || !dayData) return 'not-started';
+      const keys = [];
+      if (dayData.firstReading) keys.push('first');
+      if (dayData.secondReading) keys.push('second');
+      if (dayData.psalms) keys.push('psalms');
+      const checked = keys.filter(k => dp[k]).length;
+      if (checked === 0) return 'not-started';
+      if (checked === keys.length) return 'complete';
+      return 'partial';
+    }
+
+    function getDayStatusLabel(status) {
+      if (status === 'complete') return 'Done';
+      if (status === 'partial') return 'In Progress';
+      return 'Not Started';
+    }
+
+    function openHistory() {
+      const filtersEl = document.getElementById('historyFilters');
+      const listEl = document.getElementById('historyList');
+
+      // Render filters
+      const filters = ['All', 'Complete', 'In Progress', 'Not Started'];
+      filtersEl.innerHTML = filters.map((f, i) =>
+        `<button class="filter-btn ${i === 0 ? 'active' : ''}" data-filter="${f}">${f}</button>`
+      ).join('');
+
+      function renderList(filter) {
+        let html = '';
+        let lastPeriod = '';
+
+        for (let d = 1; d <= READING_PLAN.length; d++) {
+          const dayData = getDayData(d);
+          if (!dayData) continue;
+          const status = getDayStatus(d);
+
+          if (filter === 'Complete' && status !== 'complete') continue;
+          if (filter === 'In Progress' && status !== 'partial') continue;
+          if (filter === 'Not Started' && status !== 'not-started') continue;
+
+          const p = PERIODS.find(p => d >= p.start && d <= p.end);
+          const periodKey = p.name + p.start;
+          if (periodKey !== lastPeriod) {
+            html += `<div class="history-period-heading">${p.name} (Days ${p.start}-${p.end})</div>`;
+            lastPeriod = periodKey;
+          }
+
+          const readings = [dayData.firstReading, dayData.secondReading, dayData.psalms].filter(Boolean).join(', ');
+
+          html += `
+            <div class="history-item" data-day="${d}">
+              <div class="history-status ${status}"></div>
+              <div class="history-info">
+                <div class="history-day-label">Day ${d} · ${dayToDate(d)}</div>
+                <div class="history-readings">${readings}</div>
+              </div>
+              <div class="history-badge ${status}">${getDayStatusLabel(status)}</div>
+            </div>`;
+        }
+
+        if (!html) html = '<div style="text-align:center;padding:40px;color:var(--text-muted)">No days match this filter</div>';
+        listEl.innerHTML = html;
+
+        listEl.querySelectorAll('.history-item').forEach(item => {
+          item.addEventListener('click', () => {
+            currentDay = parseInt(item.dataset.day);
+            saveCurrentDay();
+            closeHistory();
+            renderDay();
+          });
+        });
+      }
+
+      filtersEl.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          filtersEl.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderList(btn.dataset.filter);
+        });
+      });
+
+      renderList('All');
+      document.getElementById('historyModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeHistory() {
+      document.getElementById('historyModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('historyBtn').addEventListener('click', openHistory);
+    document.getElementById('historyClose').addEventListener('click', closeHistory);
+
+    // ===== PERIOD PICKER =====
+    const PERIODS = [
+      { name: "Early World", start: 1, end: 5 },
+      { name: "Patriarchs", start: 6, end: 26 },
+      { name: "Egypt and Exodus", start: 27, end: 51 },
+      { name: "Desert Wanderings", start: 52, end: 80 },
+      { name: "Conquest and Judges", start: 81, end: 98 },
+      { name: "Messianic Checkpoint", start: 99, end: 105 },
+      { name: "Royal Kingdom", start: 106, end: 153 },
+      { name: "Messianic Checkpoint", start: 154, end: 161 },
+      { name: "Divided Kingdom", start: 162, end: 182 },
+      { name: "Exile", start: 183, end: 257 },
+      { name: "Messianic Checkpoint", start: 258, end: 266 },
+      { name: "Return", start: 267, end: 281 },
+      { name: "Maccabean Revolt", start: 282, end: 312 },
+      { name: "Messianic Fulfillment", start: 313, end: 321 },
+      { name: "The Church", start: 322, end: 365 },
+    ];
+
+    function openPeriodPicker() {
+      const list = document.getElementById('periodList');
+      list.innerHTML = PERIODS.map(p => {
+        const isCurrent = currentDay >= p.start && currentDay <= p.end ? 'current' : '';
+        return `<button class="period-item ${isCurrent}" data-start="${p.start}">
+          <span>${p.name}</span>
+          <span class="period-item-days">Days ${p.start}-${p.end}</span>
+        </button>`;
+      }).join('');
+
+      list.querySelectorAll('.period-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentDay = parseInt(btn.dataset.start);
+          saveCurrentDay();
+          closePeriodPicker();
+          renderDay();
+        });
+      });
+
+      document.getElementById('periodPickerModal').classList.add('open');
+    }
+
+    function closePeriodPicker() {
+      document.getElementById('periodPickerModal').classList.remove('open');
+    }
+
+    document.getElementById('periodModalClose').addEventListener('click', closePeriodPicker);
+    document.getElementById('periodPickerModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closePeriodPicker();
+    });
 
     // ===== SCRIPTURE MODAL =====
     async function openScriptureModal(reference) {
