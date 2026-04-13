@@ -8,29 +8,29 @@
   <title>Daily Prayer Tracker</title>
   <style>
     :root {
-      --bg: #faf8f5;
+      --bg: #f8f9fa;
       --card-bg: #ffffff;
-      --text: #2c2c2c;
-      --text-muted: #6b6b6b;
-      --border: #e8e4df;
-      --accent: #5c6d4f;
-      --accent-light: #e8ede4;
-      --scripture-bg: #f5f3ef;
-      --shadow: 0 1px 3px rgba(0,0,0,0.06);
+      --text: #1a1a2e;
+      --text-muted: #6c7a89;
+      --border: #e2e6ea;
+      --accent: #1E3A5F;
+      --accent-light: #e8eef4;
+      --scripture-bg: #f1f4f7;
+      --shadow: 0 1px 4px rgba(30,58,95,0.06);
       --radius: 12px;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #1a1a1a;
-        --card-bg: #252525;
-        --text: #e8e4df;
-        --text-muted: #999;
-        --border: #3a3a3a;
-        --accent: #8fa878;
-        --accent-light: #2d3528;
-        --scripture-bg: #2a2a2a;
-        --shadow: 0 1px 3px rgba(0,0,0,0.2);
+        --bg: #0f1419;
+        --card-bg: #1a2332;
+        --text: #e4e8ec;
+        --text-muted: #8899a6;
+        --border: #2a3a4a;
+        --accent: #5b8abf;
+        --accent-light: #1a2a3a;
+        --scripture-bg: #162029;
+        --shadow: 0 1px 4px rgba(0,0,0,0.3);
       }
     }
 
@@ -489,7 +489,7 @@
     }
 
     .history-status.complete { background: var(--accent); }
-    .history-status.partial { background: #d4a93c; }
+    .history-status.partial { background: #c4883c; }
     .history-status.not-started { background: var(--border); }
 
     .history-info { flex: 1; min-width: 0; }
@@ -515,11 +515,11 @@
     }
 
     .history-badge.complete { background: var(--accent-light); color: var(--accent); }
-    .history-badge.partial { background: #fdf3dc; color: #9a7b2e; }
+    .history-badge.partial { background: #fdf3dc; color: #8a6b2e; }
     .history-badge.not-started { background: var(--scripture-bg); color: var(--text-muted); }
 
     @media (prefers-color-scheme: dark) {
-      .history-badge.partial { background: #3d3520; color: #d4a93c; }
+      .history-badge.partial { background: #2d2a1e; color: #c4883c; }
     }
 
     /* === DAY PICKER MODAL === */
