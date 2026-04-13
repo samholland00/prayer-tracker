@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Daily Prayer Tracker</title>
+  <style>
+    :root {
+      --bg: #faf8f5;
+      --card-bg: #ffffff;
+      --text: #2c2c2c;
+      --text-muted: #6b6b6b;
+      --border: #e8e4df;
+      --accent: #5c6d4f;
+      --accent-light: #e8ede4;
+      --scripture-bg: #f5f3ef;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06);
+      --radius: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a1a;
+        --card-bg: #252525;
+        --text: #e8e4df;
+        --text-muted: #999;
+        --border: #3a3a3a;
+        --accent: #8fa878;
+        --accent-light: #2d3528;
+        --scripture-bg: #2a2a2a;
+        --shadow: 0 1px 3px rgba(0,0,0,0.2);
+      }
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 16px 100px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* === HEADER === */
+    .header {
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      padding: 16px 0 12px;
+      z-index: 10;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .nav-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 16px;
+      color: var(--text);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .nav-btn:active { opacity: 0.6; }
+
+    .day-title {
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .day-title span {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 14px;
+    }
+
+    .period-label {
+      text-align: center;
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* === PROGRESS BAR === */
+    .progress-wrap {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* === SECTION CARDS === */
+    .sections {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      transition: border-color 0.2s;
+    }
+
+    .section-card.completed {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .checkbox {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .checkbox.checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .checkbox.checked::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .section-info { flex: 1; }
+
+    .section-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .section-reference {
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .section-reference:hover { color: var(--accent); }
+
+    /* === SCRIPTURE TEXT === */
+    .scripture-toggle {
+      display: inline-block;
+      font-size: 12px;
+      color: var(--accent);
+      cursor: pointer;
+      margin-top: 6px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .scripture-wrap {
+      margin-top: 10px;
+      display: none;
+    }
+
+    .scripture-wrap.open { display: block; }
+
+    .scripture-text {
+      background: var(--scripture-bg);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text);
+      max-height: 400px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .scripture-text .verse-num {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      vertical-align: super;
+      margin-right: 2px;
+    }
+
+    .scripture-loading {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .scripture-error {
+      text-align: center;
+      padding: 14px;
+      color: #c44;
+      font-size: 13px;
+    }
+
+    /* === NOTES === */
+    .notes-wrap {
+      margin-top: 12px;
+    }
+
+    .notes-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .notes-textarea {
+      width: 100%;
+      min-height: 60px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--scripture-bg);
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .notes-textarea:focus {
+      border-color: var(--accent);
+    }
+
+    /* === DAY PICKER MODAL === */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%;
+      max-width: 360px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .modal h3 {
+      margin-bottom: 16px;
+      font-size: 18px;
+    }
+
+    .day-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .day-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      background: var(--scripture-bg);
+      color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .day-cell:active { opacity: 0.6; }
+    .day-cell.current { background: var(--accent); color: white; font-weight: 700; }
+    .day-cell.all-done { background: var(--accent-light); color: var(--accent); }
+    .day-cell.unavailable { opacity: 0.3; pointer-events: none; }
+
+    .modal-close {
+      margin-top: 16px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: var(--border);
+      color: var(--text);
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="nav-row">
+      <button class="nav-btn" id="prevBtn">‹</button>
+      <div class="day-title" id="dayTitle"></div>
+      <button class="nav-btn" id="nextBtn">›</button>
+    </div>
+    <div class="period-label" id="periodLabel"></div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText"></div>
+    </div>
+  </div>
+
+  <div class="sections" id="sections"></div>
+
+  <div class="modal-overlay" id="dayPickerModal">
+    <div class="modal">
+      <h3>Jump to Day</h3>
+      <div class="day-grid" id="dayGrid"></div>
+      <button class="modal-close" id="modalClose">Cancel</button>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script>
+    // ===== CONFIG =====
+    const BIBLE_TRANSLATION = 'ESV';
+    const STORAGE_KEYS = {
+      progress: 'prayer-tracker-progress',
+      notes: 'prayer-tracker-notes',
+      currentDay: 'prayer-tracker-current-day',
+    };
+
+    // ===== BOOK NAME MAPPING FOR API =====
+    const BOOK_MAP = {
+      'Genesis': 1, 'Exodus': 2, 'Leviticus': 3, 'Numbers': 4, 'Deuteronomy': 5,
+      'Joshua': 6, 'Judges': 7, 'Ruth': 8, '1 Samuel': 9, '2 Samuel': 10,
+      '1 Kings': 11, '2 Kings': 12, '1 Chronicles': 13, '2 Chronicles': 14,
+      'Ezra': 15, 'Nehemiah': 16, 'Esther': 17, 'Job': 18, 'Psalm': 19, 'Psalms': 19,
+      'Proverbs': 20, 'Ecclesiastes': 21, 'Song of Solomon': 22, 'Song': 22,
+      'Isaiah': 23, 'Jeremiah': 24, 'Lamentations': 25, 'Ezekiel': 26, 'Daniel': 27,
+      'Hosea': 28, 'Joel': 29, 'Amos': 30, 'Obadiah': 31, 'Jonah': 32,
+      'Micah': 33, 'Nahum': 34, 'Habakkuk': 35, 'Zephaniah': 36, 'Haggai': 37,
+      'Zechariah': 38, 'Malachi': 39,
+      'Matthew': 40, 'Mark': 41, 'Luke': 42, 'John': 43, 'Acts': 44,
+      'Romans': 45, '1 Corinthians': 46, '2 Corinthians': 47, 'Galatians': 48,
+      'Ephesians': 49, 'Philippians': 50, 'Colossians': 51, '1 Thessalonians': 52,
+      '2 Thessalonians': 53, '1 Timothy': 54, '2 Timothy': 55, 'Titus': 56,
+      'Philemon': 57, 'Hebrews': 58, 'James': 59, '1 Peter': 60, '2 Peter': 61,
+      '1 John': 62, '2 John': 63, '3 John': 64, 'Jude': 65, 'Revelation': 66,
+    };
+
+    // ===== STATE =====
+    let currentDay = parseInt(localStorage.getItem(STORAGE_KEYS.currentDay)) || 1;
+    let progress = JSON.parse(localStorage.getItem(STORAGE_KEYS.progress) || '{}');
+    let notes = JSON.parse(localStorage.getItem(STORAGE_KEYS.notes) || '{}');
+    const scriptureCache = {};
+
+    // ===== PERSISTENCE =====
+    function saveProgress() {
+      localStorage.setItem(STORAGE_KEYS.progress, JSON.stringify(progress));
+    }
+    function saveNotes() {
+      localStorage.setItem(STORAGE_KEYS.notes, JSON.stringify(notes));
+    }
+    function saveCurrentDay() {
+      localStorage.setItem(STORAGE_KEYS.currentDay, currentDay);
+    }
+
+    // ===== BIBLE TEXT FETCHING =====
+    function parseReference(ref) {
+      // Parse references like "Genesis 1-2", "Psalm 19", "Proverbs 1:1-7"
+      const match = ref.match(/^(\d?\s?[A-Za-z\s]+?)\s+(\d+)(?::(\d+))?(?:-(\d+)(?::(\d+))?)?$/);
+      if (!match) return null;
+
+      const book = match[1].trim();
+      const startChapter = parseInt(match[2]);
+      const startVerse = match[3] ? parseInt(match[3]) : null;
+      const end = match[4] ? parseInt(match[4]) : null;
+      const endVerse = match[5] ? parseInt(match[5]) : null;
+
+      const bookId = BOOK_MAP[book];
+      if (!bookId) return null;
+
+      // Determine if range is chapters or verses
+      if (startVerse !== null && end !== null && endVerse === null) {
+        // Format: "Proverbs 1:1-7" (verse range within one chapter)
+        return { book, bookId, chapters: [startChapter], startVerse, endVerse: end };
+      } else if (startVerse !== null && end !== null && endVerse !== null) {
+        // Format: "Psalm 119:57-120" or cross-chapter verse range
+        return { book, bookId, chapters: [startChapter], startVerse, endVerse: end };
+      } else if (end !== null) {
+        // Format: "Genesis 1-2" (chapter range)
+        const chapters = [];
+        for (let i = startChapter; i <= end; i++) chapters.push(i);
+        return { book, bookId, chapters, startVerse: null, endVerse: null };
+      } else {
+        // Single chapter: "Psalm 19"
+        return { book, bookId, chapters: [startChapter], startVerse: null, endVerse: null };
+      }
+    }
+
+    async function fetchScripture(reference) {
+      if (scriptureCache[reference]) return scriptureCache[reference];
+
+      const parsed = parseReference(reference);
+      if (!parsed) return { error: 'Could not parse reference: ' + reference };
+
+      try {
+        let allVerses = [];
+        for (const chapter of parsed.chapters) {
+          const url = `https://bolls.life/get-chapter/${BIBLE_TRANSLATION}/${parsed.bookId}/${chapter}/`;
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`API error: ${res.status}`);
+          const verses = await res.json();
+          allVerses = allVerses.concat(verses);
+        }
+
+        // Filter by verse range if specified
+        if (parsed.startVerse !== null) {
+          allVerses = allVerses.filter(v => v.verse >= parsed.startVerse && v.verse <= (parsed.endVerse || parsed.startVerse));
+        }
+
+        const result = { verses: allVerses };
+        scriptureCache[reference] = result;
+        return result;
+      } catch (e) {
+        return { error: 'Failed to load scripture. Check your connection.' };
+      }
+    }
+
+    function renderVerses(data) {
+      if (data.error) return `<div class="scripture-error">${data.error}</div>`;
+      return data.verses.map(v => {
+        const text = v.text.replace(/<[^>]*>/g, ''); // strip HTML tags from comments
+        return `<span class="verse-num">${v.verse}</span>${text}`;
+      }).join(' ');
+    }
+
+    // ===== UI RENDERING =====
+    const SECTION_KEYS = ['period', 'first', 'second', 'psalms'];
+    const SECTION_LABELS = {
+      period: 'Period',
+      first: 'First Reading',
+      second: 'Second Reading',
+      psalms: 'Psalms / Proverbs / Song',
+    };
+
+    function getDayData(day) {
+      return READING_PLAN.find(d => d.day === day);
+    }
+
+    function getDayProgress(day) {
+      return progress[day] || {};
+    }
+
+    function getDayNotes(day) {
+      return notes[day] || {};
+    }
+
+    function renderDay() {
+      const data = getDayData(currentDay);
+      const maxDay = READING_PLAN.length;
+
+      // Header
+      document.getElementById('dayTitle').innerHTML = `Day ${currentDay} <span>of ${maxDay}</span>`;
+      document.getElementById('dayTitle').style.cursor = 'pointer';
+      document.getElementById('dayTitle').onclick = openDayPicker;
+      document.getElementById('periodLabel').textContent = data ? data.period : '';
+
+      // Nav buttons
+      document.getElementById('prevBtn').disabled = currentDay <= 1;
+      document.getElementById('nextBtn').disabled = currentDay >= maxDay;
+
+      // Progress
+      updateProgress();
+
+      if (!data) {
+        document.getElementById('sections').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted)">No readings available for this day yet.<br>More days coming soon!</div>';
+        return;
+      }
+
+      const dayProgress = getDayProgress(currentDay);
+      const dayNotes = getDayNotes(currentDay);
+
+      const sections = [
+        { key: 'period', label: 'Period', value: data.period, hasScripture: false, hasNotes: false },
+        { key: 'first', label: 'First Reading', value: data.firstReading, hasScripture: true, hasNotes: true },
+        { key: 'second', label: 'Second Reading', value: data.secondReading, hasScripture: true, hasNotes: true },
+        { key: 'psalms', label: 'Psalms / Proverbs / Song', value: data.psalms, hasScripture: true, hasNotes: true },
+      ];
+
+      const html = sections
+        .filter(s => s.value) // skip null sections
+        .map(s => {
+          const checked = dayProgress[s.key] ? 'checked' : '';
+          const completed = dayProgress[s.key] ? 'completed' : '';
+          const noteVal = dayNotes[s.key] || '';
+
+          let scriptureHtml = '';
+          if (s.hasScripture) {
+            scriptureHtml = `
+              <div class="scripture-toggle" data-ref="${s.value}" data-key="${s.key}">
+                ▶ Read Scripture
+              </div>
+              <div class="scripture-wrap" id="scripture-${s.key}">
+                <div class="scripture-text"></div>
+              </div>`;
+          }
+
+          let notesHtml = '';
+          if (s.hasNotes) {
+            notesHtml = `
+              <div class="notes-wrap">
+                <div class="notes-label">Notes</div>
+                <textarea class="notes-textarea" data-key="${s.key}" placeholder="Write your thoughts...">${noteVal}</textarea>
+              </div>`;
+          }
+
+          return `
+            <div class="section-card ${completed}" data-key="${s.key}">
+              <div class="section-header">
+                <div class="checkbox ${checked}" data-key="${s.key}"></div>
+                <div class="section-info">
+                  <div class="section-label">${s.label}</div>
+                  <div class="section-reference">${s.value}</div>
+                  ${scriptureHtml}
+                </div>
+              </div>
+              ${notesHtml}
+            </div>`;
+        }).join('');
+
+      document.getElementById('sections').innerHTML = html;
+
+      // Bind events
+      document.querySelectorAll('.checkbox').forEach(cb => {
+        cb.addEventListener('click', () => {
+          const key = cb.dataset.key;
+          if (!progress[currentDay]) progress[currentDay] = {};
+          progress[currentDay][key] = !progress[currentDay][key];
+          saveProgress();
+          renderDay();
+        });
+      });
+
+      document.querySelectorAll('.scripture-toggle').forEach(toggle => {
+        toggle.addEventListener('click', async () => {
+          const key = toggle.dataset.key;
+          const ref = toggle.dataset.ref;
+          const wrap = document.getElementById(`scripture-${key}`);
+          const textEl = wrap.querySelector('.scripture-text');
+
+          if (wrap.classList.contains('open')) {
+            wrap.classList.remove('open');
+            toggle.textContent = '▶ Read Scripture';
+            return;
+          }
+
+          wrap.classList.add('open');
+          toggle.textContent = '▼ Hide Scripture';
+          textEl.innerHTML = '<div class="scripture-loading">Loading...</div>';
+
+          const data = await fetchScripture(ref);
+          textEl.innerHTML = renderVerses(data);
+        });
+      });
+
+      let noteTimer;
+      document.querySelectorAll('.notes-textarea').forEach(ta => {
+        ta.addEventListener('input', () => {
+          const key = ta.dataset.key;
+          if (!notes[currentDay]) notes[currentDay] = {};
+          notes[currentDay][key] = ta.value;
+          clearTimeout(noteTimer);
+          noteTimer = setTimeout(saveNotes, 500);
+        });
+      });
+    }
+
+    function updateProgress() {
+      const maxDay = READING_PLAN.length;
+      let completedDays = 0;
+      for (let i = 1; i <= maxDay; i++) {
+        const dp = progress[i];
+        if (!dp) continue;
+        const dayData = getDayData(i);
+        if (!dayData) continue;
+        const keys = ['period'];
+        if (dayData.firstReading) keys.push('first');
+        if (dayData.secondReading) keys.push('second');
+        if (dayData.psalms) keys.push('psalms');
+        if (keys.every(k => dp[k])) completedDays++;
+      }
+      const pct = Math.round((completedDays / maxDay) * 100);
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressText').textContent = `${completedDays}/${maxDay} days`;
+    }
+
+    // ===== DAY PICKER =====
+    function openDayPicker() {
+      const maxDay = READING_PLAN.length;
+      const grid = document.getElementById('dayGrid');
+      let html = '';
+      for (let i = 1; i <= maxDay; i++) {
+        const isCurrent = i === currentDay ? 'current' : '';
+        const dp = progress[i];
+        const dayData = getDayData(i);
+        let allDone = '';
+        if (dp && dayData) {
+          const keys = ['period'];
+          if (dayData.firstReading) keys.push('first');
+          if (dayData.secondReading) keys.push('second');
+          if (dayData.psalms) keys.push('psalms');
+          if (keys.every(k => dp[k])) allDone = 'all-done';
+        }
+        html += `<button class="day-cell ${isCurrent} ${allDone}" data-day="${i}">${i}</button>`;
+      }
+      grid.innerHTML = html;
+
+      grid.querySelectorAll('.day-cell').forEach(cell => {
+        cell.addEventListener('click', () => {
+          currentDay = parseInt(cell.dataset.day);
+          saveCurrentDay();
+          closeDayPicker();
+          renderDay();
+        });
+      });
+
+      document.getElementById('dayPickerModal').classList.add('open');
+    }
+
+    function closeDayPicker() {
+      document.getElementById('dayPickerModal').classList.remove('open');
+    }
+
+    // ===== NAVIGATION =====
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      if (currentDay > 1) {
+        currentDay--;
+        saveCurrentDay();
+        renderDay();
+      }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      if (currentDay < READING_PLAN.length) {
+        currentDay++;
+        saveCurrentDay();
+        renderDay();
+      }
+    });
+
+    document.getElementById('modalClose').addEventListener('click', closeDayPicker);
+    document.getElementById('dayPickerModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeDayPicker();
+    });
+
+    // Swipe navigation
+    let touchStartX = 0;
+    document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener('touchend', e => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 80) {
+        if (diff > 0 && currentDay < READING_PLAN.length) { currentDay++; saveCurrentDay(); renderDay(); }
+        else if (diff < 0 && currentDay > 1) { currentDay--; saveCurrentDay(); renderDay(); }
+      }
+    }, { passive: true });
+
+    // ===== INIT =====
+    renderDay();
+  </script>
+</body>
+</html>
