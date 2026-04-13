@@ -592,14 +592,14 @@
       inset: 0;
       background: var(--bg);
       z-index: 500;
-      display: flex;
+      display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 40px 20px;
     }
 
-    .signin-screen.hidden { display: none; }
+    .signin-screen.visible { display: flex; }
 
     .signin-title {
       font-size: 28px;
@@ -685,7 +685,7 @@
 <body>
 
   <!-- Sign-in screen -->
-  <div class="signin-screen" id="signinScreen">
+  <div class="signin-screen" id="signinScreen"><!-- hidden until auth check -->
     <div class="signin-title">Prayer Tracker</div>
     <div class="signin-subtitle">A 365-day Bible reading guide.<br>Sign in to sync your progress across devices.</div>
     <button class="signin-btn" id="signinBtn">
@@ -1361,12 +1361,12 @@
 
     // ===== AUTH =====
     function showApp() {
-      document.getElementById('signinScreen').classList.add('hidden');
+      document.getElementById('signinScreen').classList.remove('visible');
       renderDay();
     }
 
     function showSignIn() {
-      document.getElementById('signinScreen').classList.remove('hidden');
+      document.getElementById('signinScreen').classList.add('visible');
       document.getElementById('userBar').classList.add('hidden');
     }
 
