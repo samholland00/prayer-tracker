@@ -210,24 +210,57 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    .scripture-wrap {
-      margin-top: 10px;
+    /* Full-screen scripture modal */
+    .scripture-modal {
       display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: var(--bg);
+      flex-direction: column;
     }
 
-    .scripture-wrap.open { display: block; }
+    .scripture-modal.open { display: flex; }
 
-    .scripture-text {
-      background: var(--scripture-bg);
-      border-radius: 8px;
-      padding: 14px;
-      font-family: 'Georgia', 'Times New Roman', serif;
-      font-size: 15px;
-      line-height: 1.7;
-      color: var(--text);
-      max-height: 400px;
+    .scripture-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .scripture-modal-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .scripture-modal-close {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .scripture-modal-body {
+      flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      padding: 20px;
+    }
+
+    .scripture-text {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 17px;
+      line-height: 1.8;
+      color: var(--text);
+      max-width: 600px;
+      margin: 0 auto;
     }
 
     .scripture-text .verse-num {
@@ -240,16 +273,16 @@
 
     .scripture-loading {
       text-align: center;
-      padding: 20px;
+      padding: 40px 20px;
       color: var(--text-muted);
-      font-size: 14px;
+      font-size: 16px;
     }
 
     .scripture-error {
       text-align: center;
-      padding: 14px;
+      padding: 40px 20px;
       color: #c44;
-      font-size: 13px;
+      font-size: 15px;
     }
 
     /* === NOTES === */
@@ -365,6 +398,17 @@
 
   <div class="sections" id="sections"></div>
 
+  <!-- Full-screen scripture reader -->
+  <div class="scripture-modal" id="scriptureModal">
+    <div class="scripture-modal-header">
+      <div class="scripture-modal-title" id="scriptureModalTitle"></div>
+      <button class="scripture-modal-close" id="scriptureModalClose">&times;</button>
+    </div>
+    <div class="scripture-modal-body">
+      <div class="scripture-text" id="scriptureModalText"></div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="dayPickerModal">
     <div class="modal">
       <h3>Jump to Day</h3>
@@ -407,6 +451,14 @@
     let progress = JSON.parse(localStorage.getItem(STORAGE_KEYS.progress) || '{}');
     let notes = JSON.parse(localStorage.getItem(STORAGE_KEYS.notes) || '{}');
     const scriptureCache = {};
+
+    // ===== DATE HELPER =====
+    function dayToDate(day) {
+      // Day 1 = Jan 1 of current year
+      const jan1 = new Date(new Date().getFullYear(), 0, 1);
+      const date = new Date(jan1.getTime() + (day - 1) * 86400000);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
 
     // ===== PERSISTENCE =====
     function saveProgress() {
@@ -515,7 +567,8 @@
       const maxDay = READING_PLAN.length;
 
       // Header
-      document.getElementById('dayTitle').innerHTML = `Day ${currentDay} <span>of ${maxDay}</span>`;
+      const dateStr = dayToDate(currentDay);
+      document.getElementById('dayTitle').innerHTML = `Day ${currentDay} <span>· ${dateStr}</span>`;
       document.getElementById('dayTitle').style.cursor = 'pointer';
       document.getElementById('dayTitle').onclick = openDayPicker;
       document.getElementById('periodLabel').textContent = data ? data.period : '';
@@ -536,17 +589,17 @@
       const dayNotes = getDayNotes(currentDay);
 
       const sections = [
-        { key: 'period', label: 'Period', value: data.period, hasScripture: false, hasNotes: false },
-        { key: 'first', label: 'First Reading', value: data.firstReading, hasScripture: true, hasNotes: true },
-        { key: 'second', label: 'Second Reading', value: data.secondReading, hasScripture: true, hasNotes: true },
-        { key: 'psalms', label: 'Psalms / Proverbs / Song', value: data.psalms, hasScripture: true, hasNotes: true },
+        { key: 'period', label: 'Period', value: data.period, hasScripture: false, hasNotes: false, hasCheckbox: false },
+        { key: 'first', label: 'First Reading', value: data.firstReading, hasScripture: true, hasNotes: true, hasCheckbox: true },
+        { key: 'second', label: 'Second Reading', value: data.secondReading, hasScripture: true, hasNotes: true, hasCheckbox: true },
+        { key: 'psalms', label: 'Psalms / Proverbs / Song', value: data.psalms, hasScripture: true, hasNotes: true, hasCheckbox: true },
       ];
 
       const html = sections
         .filter(s => s.value) // skip null sections
         .map(s => {
           const checked = dayProgress[s.key] ? 'checked' : '';
-          const completed = dayProgress[s.key] ? 'completed' : '';
+          const completed = s.hasCheckbox && dayProgress[s.key] ? 'completed' : '';
           const noteVal = dayNotes[s.key] || '';
 
           let scriptureHtml = '';
@@ -554,9 +607,6 @@
             scriptureHtml = `
               <div class="scripture-toggle" data-ref="${s.value}" data-key="${s.key}">
                 ▶ Read Scripture
-              </div>
-              <div class="scripture-wrap" id="scripture-${s.key}">
-                <div class="scripture-text"></div>
               </div>`;
           }
 
@@ -569,10 +619,14 @@
               </div>`;
           }
 
+          const checkboxHtml = s.hasCheckbox
+            ? `<div class="checkbox ${checked}" data-key="${s.key}"></div>`
+            : '';
+
           return `
             <div class="section-card ${completed}" data-key="${s.key}">
               <div class="section-header">
-                <div class="checkbox ${checked}" data-key="${s.key}"></div>
+                ${checkboxHtml}
                 <div class="section-info">
                   <div class="section-label">${s.label}</div>
                   <div class="section-reference">${s.value}</div>
@@ -597,24 +651,9 @@
       });
 
       document.querySelectorAll('.scripture-toggle').forEach(toggle => {
-        toggle.addEventListener('click', async () => {
-          const key = toggle.dataset.key;
+        toggle.addEventListener('click', () => {
           const ref = toggle.dataset.ref;
-          const wrap = document.getElementById(`scripture-${key}`);
-          const textEl = wrap.querySelector('.scripture-text');
-
-          if (wrap.classList.contains('open')) {
-            wrap.classList.remove('open');
-            toggle.textContent = '▶ Read Scripture';
-            return;
-          }
-
-          wrap.classList.add('open');
-          toggle.textContent = '▼ Hide Scripture';
-          textEl.innerHTML = '<div class="scripture-loading">Loading...</div>';
-
-          const data = await fetchScripture(ref);
-          textEl.innerHTML = renderVerses(data);
+          openScriptureModal(ref);
         });
       });
 
@@ -638,11 +677,11 @@
         if (!dp) continue;
         const dayData = getDayData(i);
         if (!dayData) continue;
-        const keys = ['period'];
+        const keys = [];
         if (dayData.firstReading) keys.push('first');
         if (dayData.secondReading) keys.push('second');
         if (dayData.psalms) keys.push('psalms');
-        if (keys.every(k => dp[k])) completedDays++;
+        if (keys.length > 0 && keys.every(k => dp[k])) completedDays++;
       }
       const pct = Math.round((completedDays / maxDay) * 100);
       document.getElementById('progressFill').style.width = pct + '%';
@@ -660,11 +699,11 @@
         const dayData = getDayData(i);
         let allDone = '';
         if (dp && dayData) {
-          const keys = ['period'];
+          const keys = [];
           if (dayData.firstReading) keys.push('first');
           if (dayData.secondReading) keys.push('second');
           if (dayData.psalms) keys.push('psalms');
-          if (keys.every(k => dp[k])) allDone = 'all-done';
+          if (keys.length > 0 && keys.every(k => dp[k])) allDone = 'all-done';
         }
         html += `<button class="day-cell ${isCurrent} ${allDone}" data-day="${i}">${i}</button>`;
       }
@@ -718,6 +757,28 @@
         else if (diff < 0 && currentDay > 1) { currentDay--; saveCurrentDay(); renderDay(); }
       }
     }, { passive: true });
+
+    // ===== SCRIPTURE MODAL =====
+    async function openScriptureModal(reference) {
+      const modal = document.getElementById('scriptureModal');
+      const titleEl = document.getElementById('scriptureModalTitle');
+      const textEl = document.getElementById('scriptureModalText');
+
+      titleEl.textContent = reference;
+      textEl.innerHTML = '<div class="scripture-loading">Loading...</div>';
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+
+      const data = await fetchScripture(reference);
+      textEl.innerHTML = renderVerses(data);
+    }
+
+    function closeScriptureModal() {
+      document.getElementById('scriptureModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    document.getElementById('scriptureModalClose').addEventListener('click', closeScriptureModal);
 
     // ===== INIT =====
     renderDay();
