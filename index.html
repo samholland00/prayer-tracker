@@ -1379,13 +1379,9 @@
       }
     }
 
-    document.getElementById('signinBtn').addEventListener('click', async () => {
-      try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        await auth.signInWithPopup(provider);
-      } catch (e) {
-        console.error('Sign-in error:', e);
-      }
+    document.getElementById('signinBtn').addEventListener('click', () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithRedirect(provider);
     });
 
     document.getElementById('signoutBtn').addEventListener('click', async () => {
